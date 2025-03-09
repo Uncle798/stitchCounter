@@ -70,3 +70,8 @@ export const magicLinkFormSchema = z.object({
    email: z.string().min(5)
 });
 export type MagicLinkFormSchema  = typeof magicLinkFormSchema;
+
+export const newProjectFormSchema = z.object({
+   name: z.string().min(1)
+})
+export type NewProjectFormSchema = typeof newProjectFormSchema;
