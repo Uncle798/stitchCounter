@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id   String @id @unique @default(cuid(2))
+  name String
+  ownerId String 
+  rows Row[]
+  user User @relation(fields: [ownerId], references: [id])
+}
+
+model Row {
+  rowId String @id @default(cuid(2))
+  number    Int
+  projectId String
+  stitches  Stitch[]
+  project   Project  @relation(fields: [projectId], references: [id])
+}
+
+model Stitch {
+  id        String     @id @default(cuid(2))
+  rowId String
+  row       Row        @relation(fields: [rowId], references: [rowId])
+  type      StitchType
+}
+
+enum StitchType {
+  Single
+  Increase
+}
+
+model User {
+  id                   String          @id @unique @default(cuid(2)) @map("id")
+  createdAt            DateTime        @default(now()) @map("created_at")
+  updatedAt            DateTime?       @updatedAt @map("updated_at")
+  email                String?         @unique
+  givenName            String?
+  familyName           String?
+  emailVerified        Boolean?        @map("email_verified")
+  stripeId             String?
+  archive              Boolean         @default(false)
+  googleId             String?
+  yahooId              String?
+  projects             Project[]
+  session              Session[]
+  verification         Verification[]
+
+  @@unique([id, email])
+  @@unique([email, givenName, familyName])
+  @@index([id, email])
+  @@map("users")
+}
+
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Verification {
+  id        String   @id @default(cuid(2))
+  code      String
+  userId    String   @map("user_id")
+  email     String
+  expiresAt DateTime @map("expires_at")
+  user      User     @relation(fields: [userId, email], references: [id, email])
+
+  @@map("verification")
+}
+
+model MagicLink {
+  tokenHash String   @unique @map("token_hash")
+  email     String
+  expiresAt DateTime @map("expires_at")
+}
