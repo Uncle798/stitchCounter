@@ -40,15 +40,6 @@
          placeholder='Bear'
          autocomplete='family-name'
       />
-      <TextInput
-         bind:value={$form.organizationName}
-         errors={$errors.organizationName}
-         constraints={$constraints.organizationName}
-         label='Organization name (optional)'
-         name='organizationName'
-         placeholder='The Forrest'
-         autocomplete='organization'
-      />
       <FormProgress delayed={$delayed} timeout={$timeout}/>
    </form>
 </div>
