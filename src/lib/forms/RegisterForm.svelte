@@ -5,16 +5,13 @@
    import FormSubmitWithProgress from "$lib/formComponents/FormSubmitWithProgress.svelte";
    import { superForm, type Infer, type SuperValidated } from "sveltekit-superforms";
 	import type { RegisterFormSchema } from "$lib/formSchemas/schemas";
-	import { invalidateAll } from "$app/navigation";
    
    interface Props {
       data: SuperValidated<Infer<RegisterFormSchema>>
       registerFormModalOpen?: boolean
-      formType: 'customer' | 'employee'
-      redirectTo?:string;
       classes?: string;
    }
-   let { data, registerFormModalOpen = $bindable(), formType, redirectTo, classes }:Props = $props();
+   let { data, registerFormModalOpen = $bindable(), classes="" }:Props = $props();
    let { form, errors, constraints, message, enhance, delayed, timeout} = superForm(data, {
       onUpdated(){
          registerFormModalOpen=false;
@@ -23,7 +20,7 @@
 </script>
 <div class={classes}>
    <FormMessage message={$message} />
-   <form method="POST" action="/forms/registerForm?/{formType}&redirectTo={redirectTo}" use:enhance>
+   <form method="POST" action="/forms/registerForm" use:enhance>
       <TextInput
          label='Given name'
          name='givenName'
