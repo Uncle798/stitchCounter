@@ -4,6 +4,7 @@
    import type { PageData } from "./$types";
    import NewProjectForm from "$lib/forms/NewProjectForm.svelte";
    import { goto } from "$app/navigation";
+    import LoginForm from "$lib/forms/LoginForm.svelte";
 
    interface Props {
       data: PageData
@@ -51,5 +52,5 @@
    </div>
    {/await}
 {:else}
-   <
+   <LoginForm data={data.loginForm} classes='m-2'/>
 {/if}
