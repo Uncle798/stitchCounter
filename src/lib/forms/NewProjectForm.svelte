@@ -7,7 +7,7 @@
     import FormSubmitWithProgress from '$lib/formComponents/FormSubmitWithProgress.svelte';
    interface Props {
       data: SuperValidated<Infer<NewProjectFormSchema>>;
-      newProjectModalOpen: boolean;
+      newProjectModalOpen?: boolean;
       classes?: string; 
    }
    let {
@@ -23,7 +23,7 @@
 </script>
 <div class={classes}>
    <FormMessage message={$message} />
-   <form action="/forms/newProject" method="POST" use:enhance>
+   <form action="/forms/newProjectForm" method="POST" use:enhance>
       <TextInput
       bind:value={$form.name}
       errors={$errors.name}
