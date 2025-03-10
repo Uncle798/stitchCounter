@@ -3,12 +3,13 @@ import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { newProjectFormSchema } from '$lib/formSchemas/schemas';
+import { loginSchema, newProjectFormSchema } from '$lib/formSchemas/schemas';
 
 export const load = (async () => {
     const projects = prisma.project.findMany();
     const newProjectForm = await superValidate(zod(newProjectFormSchema));
-    return { projects, newProjectForm };
+    const loginForm = await superValidate(zod(loginSchema));
+    return { projects, newProjectForm, loginForm };
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
