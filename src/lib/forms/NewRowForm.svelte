@@ -1,8 +1,7 @@
 <script lang="ts">
    import FormMessage from "$lib/formComponents/FormMessage.svelte";
-    import FormSubmitWithProgress from "$lib/formComponents/FormSubmitWithProgress.svelte";
-    import NumberInput from "$lib/formComponents/NumberInput.svelte";
-import type { NewRowFormSchema } from "$lib/formSchemas/schemas";
+   import FormSubmitWithProgress from "$lib/formComponents/FormSubmitWithProgress.svelte";
+   import type { NewRowFormSchema } from "$lib/formSchemas/schemas";
    import type { Infer, SuperValidated } from "sveltekit-superforms";
    import { superForm } from "sveltekit-superforms";
 
