@@ -13,7 +13,7 @@ export const load = (async () => {
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
-   customer: async (event) => {
+   default: async (event) => {
       const formData = await event.request.formData();
       const registerForm = await superValidate(formData, zod(registerFormSchema));
       if(!registerForm.valid){
@@ -54,39 +54,4 @@ export const actions: Actions = {
 		}
 		redirect(302, `/register/emailVerification`);
    },
-   employee: async (event) => {
-      if(!event.locals.user?.employee){
-         redirect(302, '/login?toast=employee')
-      }
-      const formData = await event.request.formData();
-      const registerForm = await superValidate(formData, zod(registerFormSchema));
-		const redirectTo = event.url.searchParams.get('redirectTo');
-      if(!registerForm.valid){
-         message(registerForm, 'Unable to process');
-      }
-      const { success, reset } = await ratelimit.register.limit(event.locals.user.id);
-      if(!success){
-         const timeRemaining = Math.floor((reset - Date.now()) / 1000);
-         return message(registerForm, `Please wait ${timeRemaining} seconds before trying again`)
-      }
-      const userAlreadyExists = await prisma.user.findUnique({
-			where:{
-				email: registerForm.data.email
-			}
-		})
-      if(userAlreadyExists){
-         return message(registerForm, 'User Already exists');
-      }
-      const user = await prisma.user.create({
-			data:{ 
-				email: registerForm.data.email, 
-				givenName: registerForm.data.givenName,
-				familyName: registerForm.data.familyName,
-			}
-		});
-		if(redirectTo){
-			redirect(303, `/${redirectTo}?userId=${user.id}`)
-		}
-      return { registerForm }
-   }
 };
