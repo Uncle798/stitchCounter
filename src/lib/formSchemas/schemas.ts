@@ -75,3 +75,22 @@ export const newProjectFormSchema = z.object({
    name: z.string().min(1)
 })
 export type NewProjectFormSchema = typeof newProjectFormSchema;
+
+export const newRowFormSchema = z.object({
+   projectId: z.string().cuid2(),
+   rowNumber: z.number().positive()
+});
+export type NewRowFormSchema = typeof newRowFormSchema;
+
+export const newPatternSchema = z.object({
+   numberOfStitches: z.number().positive(),
+   typeOfStitches: z.enum(['Single', 'Increase']),
+   rowId: z.string().cuid2(),
+});
+export type NewPatternSchema = typeof newPatternSchema
+
+export const projectDeleteFormSchema = z.object({
+   projectId: z.string().cuid2(),
+   projectName: z.string().min(1)
+})
+export type ProjectDeleteFormSchema = typeof projectDeleteFormSchema
