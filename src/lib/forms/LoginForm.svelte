@@ -1,26 +1,25 @@
 <script lang="ts">
-   import EmailInput from "$lib/formComponents/EmailInput.svelte";
-   import FormSubmitWithProgress from "$lib/formComponents/FormSubmitWithProgress.svelte";
-   import { superForm } from "sveltekit-superforms";
-   import type { SuperValidated, Infer } from "sveltekit-superforms";
-   import type { LoginSchema } from "$lib/formSchemas/schemas";
-   
-   interface Props {
-      data: <SuperValidated<Infer<LoginSchema>>;
-      classes?: string
-   }
-   let { data, }:Props = $props()
-   let { form, errors, constraints, message, enhance, delayed, timeout} = superForm(data, {
-      onUpdated(){
+    import EmailInput from "$lib/formComponents/EmailInput.svelte";
+    import FormSubmitWithProgress from "$lib/formComponents/FormSubmitWithProgress.svelte";
+    import FormMessage from "$lib/formComponents/FormMessage.svelte";
+    import { superForm } from "sveltekit-superforms";
+    import type { LoginSchema } from "$lib/formSchemas/schemas";
+    import type { SuperValidated, Infer } from "sveltekit-superforms";
+    interface Props {
+        data: SuperValidated<Infer<LoginSchema>>;
+        classes?: string
+    }
+    let { data, classes='' }:Props = $props()
+    let { form, errors, message, constraints, enhance, delayed, timeout} = superForm(data, {
+      onUpdate(){
       }
-   })
+   });
 </script>
-
-<p class="h2 ">Please enter your email to login </p>
+<div class={classes}>
+    <p class="h2 ">Please enter your email to login </p>
     <div class="h4">
         <FormMessage message={$message} />
     </div>
-    
     <form method="post" use:enhance >
         <EmailInput
         bind:value={$form.email}
@@ -36,3 +35,4 @@
         <a href="/login/yahoo" class="anchor">Sign in with Yahoo!</a>
         <a href="/register" class="anchor">Register new account</a>
     </div>
+</div>
