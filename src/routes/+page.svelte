@@ -30,6 +30,8 @@
       res(projects)
    })
 </script>
+{#if data.user}
+   
 
 {#await wrapper}
    <div>Loading projects</div>
@@ -48,3 +50,6 @@
       <NewProjectForm data={data.newProjectForm} />
    </div>
    {/await}
+{:else}
+   <
+{/if}
