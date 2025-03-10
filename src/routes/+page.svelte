@@ -2,6 +2,8 @@
    import { Combobox } from "@skeletonlabs/skeleton-svelte"
    import type { Project } from "@prisma/client";
    import type { PageData } from "./$types";
+   import NewProjectForm from "$lib/forms/NewProjectForm.svelte";
+   import { goto } from "$app/navigation";
 
    interface Props {
       data: PageData
@@ -39,6 +41,10 @@
          label='Projects'
          placeholder='Select...'
          openOnClick={true}
+         onValueChange={(details) => {
+            goto(`/projects/${details.value[0]}`)
+         }}
       />
+      <NewProjectForm data={data.newProjectForm} />
    </div>
-{/await}
+   {/await}
