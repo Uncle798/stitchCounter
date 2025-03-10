@@ -1,4 +1,4 @@
-<script lang=ts>
+<script lang="ts">
    import FormMessage from "$lib/formComponents/FormMessage.svelte";
    import TextInput from "$lib/formComponents/TextInput.svelte";
    import EmailInput from "$lib/formComponents/EmailInput.svelte";
@@ -39,14 +39,6 @@
          errors={$errors.familyName}
          constraints={$constraints.familyName}
          placeholder='Bear'
-      />
-      <TextInput
-         bind:value={$form.organizationName}
-         errors={$errors.organizationName}
-         constraints={$constraints.organizationName}
-         label='Organization name (optional)'
-         name='organizationName'
-         placeholder='The Forrest'
       />
       <EmailInput
          label="Email"
