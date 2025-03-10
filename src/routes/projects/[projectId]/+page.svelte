@@ -1,13 +1,32 @@
 <script lang="ts">
-    import StitchDisplay from '$lib/displayComponents/StitchDisplay.svelte';
+   import StitchDisplay from '$lib/displayComponents/StitchDisplay.svelte';
    import NewPatternForm from '$lib/forms/NewPatternForm.svelte';
 
    import NewRowForm from '$lib/forms/NewRowForm.svelte';
-    import ProjectDeleteForm from '$lib/forms/ProjectDeleteForm.svelte';
+   import ProjectDeleteForm from '$lib/forms/ProjectDeleteForm.svelte';
    import Header from '$lib/Header.svelte';
+    import { onMount } from 'svelte';
    import type { PageData } from './$types';
+    import { beforeNavigate } from '$app/navigation';
 
    let { data }: { data: PageData } = $props();
+   let wakeLock: WakeLockSentinel;
+   const requestWakeLock = async () => {
+      try {
+         wakeLock = await navigator.wakeLock.request('screen');
+         wakeLock.addEventListener('release', () => {
+            console.log('Screen lock released', wakeLock.released)
+         })
+         console.log('Wake locked', wakeLock.released)
+      } catch (error) {
+         console.error(error)
+      }
+      return wakeLock
+   }
+   onMount(()=>
+
+   requestWakeLock())
+   beforeNavigate(() => wakeLock.release())
 </script>
 <a href="/" class="anchor">Home</a>
 {#if data.project}
