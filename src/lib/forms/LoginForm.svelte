@@ -3,10 +3,10 @@
     import FormSubmitWithProgress from "$lib/formComponents/FormSubmitWithProgress.svelte";
     import FormMessage from "$lib/formComponents/FormMessage.svelte";
     import { superForm } from "sveltekit-superforms";
-    import type { LoginSchema } from "$lib/formSchemas/schemas";
+    import type { MagicLinkFormSchema } from "$lib/formSchemas/schemas";
     import type { SuperValidated, Infer } from "sveltekit-superforms";
     interface Props {
-        data: SuperValidated<Infer<LoginSchema>>;
+        data: SuperValidated<Infer<MagicLinkFormSchema>>;
         classes?: string
     }
     let { data, classes='' }:Props = $props()
