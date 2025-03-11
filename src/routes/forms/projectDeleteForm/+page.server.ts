@@ -57,8 +57,10 @@ export const actions: Actions = {
                id: project?.id
             }
          })
-         message(projectDeleteForm, 'Project deleted')
+         redirect(302, '/')
       }
       message(projectDeleteForm, 'Please type name exactly to delete')
+   
    }
+
 };
