@@ -32,7 +32,7 @@
          placeholder='3'
       />
       <label for="typeOfStitches" class="label-text">Type of stitches
-         <select name="typeOfStitches" id="typeOfStitches" class="select" bind:value={$form.typeOfStitches}>
+         <select name="typeOfStitches" id="typeOfStitches" class="select mt-1" bind:value={$form.typeOfStitches}>
             {#each ['Single', 'Increase'] as stitch}
                <option value={stitch}>{stitch}</option>
             {/each}
