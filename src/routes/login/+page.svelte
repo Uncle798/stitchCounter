@@ -54,4 +54,4 @@
     })
 </script>
 <Header title="Login" />
-<LoginForm data={data.magicLinkForm} />
+<LoginForm data={data.magicLinkForm} classes='mt-8 mx-2'/>
