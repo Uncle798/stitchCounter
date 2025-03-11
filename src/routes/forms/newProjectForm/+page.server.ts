@@ -14,12 +14,13 @@ export const load = (async () => {
 
 export const actions: Actions = {
    default: async (event) => {
-      if(!event.locals.user){
-         redirect(302, '/login?toast=unauthorized')
-      }
+      // if(!event.locals.user){
+      //    redirect(302, '/login?toast=unauthorized')
+      // }
       const formData = await event.request.formData();
       const newProjectForm = await superValidate(formData, zod(newProjectFormSchema));
-      const { success, reset } = await ratelimit.general.limit(event.locals.user?.id)
+      // should be event.locals.user.id
+      const { success, reset } = await ratelimit.general.limit(event.getClientAddress())
       if(!success) {
          const timeRemaining = Math.floor((reset - Date.now()) /1000);
          return message(newProjectForm, `Please wait ${timeRemaining}s before trying again.`)
@@ -29,7 +30,8 @@ export const actions: Actions = {
       }
       const project = await prisma.project.create({
          data:{
-            ownerId: event.locals.user.id,
+            // should be not in quotes
+            ownerId: 'event.locals.user.id',
             name: newProjectForm.data.name
          }
       })

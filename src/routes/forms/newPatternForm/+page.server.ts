@@ -12,12 +12,12 @@ export const load = (async (event) => {
 
 export const actions: Actions = {
    default: async (event) => {
-      if(!event.locals.user){
-         redirect(302, '/login?toast=unauthorized')
-      }
+      // if(!event.locals.user){
+      //    redirect(302, '/login?toast=unauthorized')
+      // }
       const formData = await event.request.formData();
       const newPatternForm = await superValidate(formData, zod(newPatternSchema));
-      const { success, reset } = await ratelimit.general.limit(event.locals.user?.id)
+      const { success, reset } = await ratelimit.general.limit(event.getClientAddress())
       if(!success) {
          const timeRemaining = Math.floor((reset - Date.now()) /1000);
          return message(newPatternForm, `Please wait ${timeRemaining}s before trying again.`)

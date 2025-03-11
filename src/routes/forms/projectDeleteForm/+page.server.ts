@@ -13,12 +13,12 @@ export const load = (async (event) => {
 
 export const actions: Actions = {
    default: async (event) => {
-      if(!event.locals.user){
-         redirect(302, '/login?toast=unauthorized')
-      }
+      // if(!event.locals.user){
+      //    redirect(302, '/login?toast=unauthorized')
+      // }
       const formData = await event.request.formData();
       const projectDeleteForm = await superValidate(formData, zod(projectDeleteFormSchema));
-      const { success, reset } = await ratelimit.general.limit(event.locals.user?.id)
+      const { success, reset } = await ratelimit.general.limit(event.getClientAddress())
       if(!success) {
          const timeRemaining = Math.floor((reset - Date.now()) /1000);
          return message(projectDeleteForm, `Please wait ${timeRemaining}s before trying again.`)
@@ -35,9 +35,9 @@ export const actions: Actions = {
       if(!project){
          fail(404, projectDeleteForm)
       }
-      if(project?.ownerId !== event.locals.user.id){
-         message(projectDeleteForm, 'Not your project to delete');
-      }
+      // if(project?.ownerId !== event.locals.user.id){
+      //    message(projectDeleteForm, 'Not your project to delete');
+      // }
       console.log(project?.name.localeCompare(projectDeleteForm.data.projectName))
       if(project?.name.localeCompare(projectDeleteForm.data.projectName) === 0){
          await prisma.stitch.deleteMany({
