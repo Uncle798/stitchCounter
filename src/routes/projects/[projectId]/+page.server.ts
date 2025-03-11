@@ -6,21 +6,34 @@ import { newPatternSchema, newRowFormSchema, projectDeleteFormSchema } from '$li
 
 
 export const load = (async (event) => {
-   const project = await prisma.project.findUnique({
+   const project = prisma.project.findUnique({
       where: {
          id: event.params.projectId
       }
    });
-   const rows = await prisma.row.findMany({
+   const rows = prisma.row.findMany({
       where: {
-         projectId: project?.id
+         projectId: event.params.projectId
       },
       include: {
-         stitches: true
+         stitches: true,
+      },
+      orderBy: {
+         number: 'asc'
+      }
+   })
+   const stitches = prisma.stitch.findMany({
+      where: {
+         row: {
+            projectId: event.params.projectId
+         }
+      },
+      orderBy: {
+         number: 'asc'
       }
    })
    const newRowForm = await superValidate(zod(newRowFormSchema));
    const newPatternForm = await superValidate(zod(newPatternSchema));
    const projectDeleteForm = await superValidate(zod(projectDeleteFormSchema))
-   return { project, rows, newRowForm, newPatternForm, projectDeleteForm };
+   return { project, rows, newRowForm, newPatternForm, projectDeleteForm, stitches };
 }) satisfies PageServerLoad;
