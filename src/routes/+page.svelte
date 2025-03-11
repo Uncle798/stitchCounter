@@ -22,22 +22,27 @@
    const wrapper = new Promise<Project[]>(async res => {
       const projects = await data.projects
       projects.forEach((project) => {
-         const datum:ComboboxData = {
-            label: project.name,
-            value: project.id
+         const alreadyThere = projectComboBoxData.find((datum) => {
+            return project.id === datum.value || project.name === datum.label
+         })
+         if(!alreadyThere){
+            const datum:ComboboxData = {
+               label: project.name,
+               value: project.id
+            }
+            projectComboBoxData.push(datum)
          }
-         projectComboBoxData.push(datum)
       })
       res(projects)
    })
 </script>
-{#if data.user}
-   
+<!-- {#if data.user}
+    -->
 
 {#await wrapper}
-   <div>Loading projects</div>
-{:then projects} 
-   <div class="m-2">
+   <div class="mt-10">Loading projects</div>
+{:then projects}  
+   <div class="m-2 mt-10">
       <Combobox
          data={projectComboBoxData}
          value={projectSelect}
@@ -51,6 +56,6 @@
       <NewProjectForm data={data.newProjectForm} />
    </div>
    {/await}
-{:else}
+<!-- {:else}
    <LoginForm data={data.loginForm} classes='m-2'/>
-{/if}
+{/if} -->
