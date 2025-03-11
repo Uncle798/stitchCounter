@@ -8,11 +8,9 @@
    import { onMount } from 'svelte';
    import type { PageData } from './$types';
    import { beforeNavigate, invalidateAll } from '$app/navigation';
-    import { fade } from 'svelte/transition';
-    import type { Stitch } from '@prisma/client';
-    import StitchDeleteForm from '$lib/forms/StitchDeleteForm.svelte';
-    import { newRowFormSchema } from '$lib/formSchemas/schemas';
-    import { Accordion } from '@skeletonlabs/skeleton-svelte';
+   import { fade } from 'svelte/transition';
+   import type { Stitch } from '@prisma/client';
+   import { Accordion } from '@skeletonlabs/skeleton-svelte';
    let { data }: { data: PageData } = $props();
    let wakeLock: WakeLockSentinel;
    const requestWakeLock = async () => {
@@ -66,19 +64,25 @@
       invalidateAll()
    }
    onMount(()=> requestWakeLock())
-   beforeNavigate(() => wakeLock.release())
+   beforeNavigate(() => {
+      if(wakeLock){
+         wakeLock.release()
+      }
+   })
    let accordionValue = $state([''])
 </script>
 
 <a href="/" class="anchor">Home</a>
 
 {#await data.project}
-   <div class="">
+   <div class="m-2">
       loading project
    </div>
 {:then project}
    {#await data.rows}
-      loading rows
+      <div class="m-2">
+         loading rows
+      </div>
    {:then rows} 
       {#await wrapper}
          loading stitches
