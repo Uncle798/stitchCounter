@@ -16,7 +16,7 @@ datasource db {
 model Project {
   id      String @id @unique @default(cuid(2))
   name    String
-  ownerId String
+  // ownerId String
   rows    Row[]
   // user    User   @relation(fields: [ownerId], references: [id])
 }
