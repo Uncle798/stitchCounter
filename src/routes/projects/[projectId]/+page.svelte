@@ -73,7 +73,9 @@
 <a href="/" class="anchor">Home</a>
 
 {#await data.project}
-   loading project
+   <div class="">
+      loading project
+   </div>
 {:then project}
    {#await data.rows}
       loading rows
@@ -84,12 +86,12 @@
          {#if project}
          <Header title={project.name} />
          <div class="m-2" transition:fade={{duration:600}}>
-            <h1 class="h1 text-center">{project.name}</h1>
+            <h1 class="h1 text-center ">{project.name}</h1>
             <label for="selectAll" class="label-text">
                Select All
                <input type="checkbox" name="selectAll" id="selectAll" class="checkbox" onchange={toggleAll} checked={selectedStitches.length === allStitches.length}>
             </label>
-            <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap " onclick={deleteStitches}>Delete Stitches</button>
+            <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap my-2" onclick={deleteStitches}>Delete Stitches</button>
             <Accordion value={accordionValue} onValueChange={(event) => (accordionValue = event.value)} >
                   {#each rows as row}
                   {@const rowStitches = stitches.filter((stitch) => stitch.rowId === row.rowId)}
@@ -110,6 +112,7 @@
                                  </button></div>
                               </div>
                            {/each}
+                           <NewPatternForm data={data.newPatternForm}  rowId={row.rowId} />
                         {/snippet}
                      </Accordion.Item>
                   {/each}
