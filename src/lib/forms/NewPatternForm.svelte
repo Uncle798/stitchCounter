@@ -4,6 +4,7 @@
    import type { NewPatternSchema } from "$lib/formSchemas/schemas";
    import type { Infer, SuperValidated } from "sveltekit-superforms";
    import { superForm } from "sveltekit-superforms";
+   import { invalidateAll } from "$app/navigation";
 
    interface Props {
       data: SuperValidated<Infer<NewPatternSchema>>;
@@ -15,7 +16,7 @@
 
    let { form, errors, message, constraints, enhance, delayed, timeout} = superForm(data, {
       onUpdate(){
-         newPatternModalOpen=false
+         invalidateAll()
       }
    });
 </script>
