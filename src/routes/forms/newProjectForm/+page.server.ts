@@ -30,8 +30,7 @@ export const actions: Actions = {
       }
       const project = await prisma.project.create({
          data:{
-            // event.locals.user.id
-            ownerId: 'event.locals.user.id',
+            // ownerId: event.locals.user.id,
             name: newProjectForm.data.name
          }
       })
