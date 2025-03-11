@@ -31,7 +31,7 @@ export const actions: Actions = {
       const project = await prisma.project.create({
          data:{
             // should be not in quotes
-            ownerId: 'event.locals.user.id',
+            ownerId: (Math.random()*1000).toString(),
             name: newProjectForm.data.name
          }
       })
