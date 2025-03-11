@@ -14,15 +14,15 @@ datasource db {
 }
 
 model Project {
-  id   String @id @unique @default(cuid(2))
-  name String
-  ownerId String 
-  rows Row[]
-  user User @relation(fields: [ownerId], references: [id])
+  id      String @id @unique @default(cuid(2))
+  name    String
+  ownerId String
+  rows    Row[]
+  // user    User   @relation(fields: [ownerId], references: [id])
 }
 
 model Row {
-  rowId String @id @default(cuid(2))
+  rowId     String   @id @default(cuid(2))
   number    Int
   projectId String
   stitches  Stitch[]
@@ -44,27 +44,26 @@ enum StitchType {
 }
 
 model User {
-  id                   String          @id @unique @default(cuid(2))
-  createdAt            DateTime        @default(now()) @map("created_at")
-  updatedAt            DateTime?       @updatedAt @map("updated_at")
-  email                String?         @unique
-  givenName            String?
-  familyName           String?
-  emailVerified        Boolean?        @map("email_verified")
-  stripeId             String?
-  archive              Boolean         @default(false)
-  googleId             String?
-  yahooId              String?
-  projects             Project[]
-  session              Session[]
-  verification         Verification[]
+  id            String         @id @unique @default(cuid(2))
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime?      @updatedAt @map("updated_at")
+  email         String?        @unique
+  givenName     String?
+  familyName    String?
+  emailVerified Boolean?       @map("email_verified")
+  stripeId      String?
+  archive       Boolean        @default(false)
+  googleId      String?
+  yahooId       String?
+  // projects      Project[]
+  session       Session[]
+  verification  Verification[]
 
   @@unique([id, email])
   @@unique([email, givenName, familyName])
   @@index([id, email])
   @@map("users")
 }
-
 
 model Session {
   id        String   @id
