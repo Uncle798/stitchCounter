@@ -10,7 +10,7 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"postinstall": "prisma generate --no-engine"
+		"postinstall": "prisma generate"
 	},
 	"devDependencies": {
 		"@skeletonlabs/skeleton": "3.0.0",
