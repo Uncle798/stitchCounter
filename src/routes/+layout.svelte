@@ -2,9 +2,15 @@
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
 	import '../app.css';
 	import { beforeNavigate } from '$app/navigation';
-	import {Menu} from 'lucide-svelte';
+	import { Menu } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
-	let { children, data } = $props();
+	import type { Snippet } from 'svelte';
+   import type { LayoutData } from './$types.js';
+	interface Props {
+		children: Snippet, 
+		data: LayoutData
+	}
+	let { children, data }:Props = $props();
 	interface Link {
 		link: string;
 		label: string;
