@@ -8,24 +8,25 @@ export const DELETE: RequestHandler = async (event) => {
       where: {
          id: stitchId
       },
-      include: {
-         row: {
-            include: {
-               project: {
-                  select: {
-                     ownerId: true
-                  }
-               }
-            }
-         }
-      }
+
+      // include: {
+      //    row: {
+      //       include: {
+      //          project: {
+      //             select: {
+      //                ownerId: true
+      //             }
+      //          }
+      //       }
+      //    }
+      // }
    })
    if(!stitch){
       return new Response(JSON.stringify('Stitch not found'), {status: 404})
    }
-   if(stitch.row.project.ownerId !== event.locals.user?.id){
-      return new Response(JSON.stringify('Not your stitch'), { status: 402})
-   }
+   // if(stitch.row.project.ownerId !== event.locals.user?.id){
+   //    return new Response(JSON.stringify('Not your stitch'), { status: 402})
+   // }
    await prisma.stitch.delete({
       where: {
          id: stitch.id
@@ -41,25 +42,25 @@ export const POST: RequestHandler = async (event) => {
       where: {
          id: stitchId
       },
-      include: {
-         row: {
-            include: {
-               project: {
-                  select: {
-                     ownerId: true
-                  }
-               }
-            }
-         }
-      }
+      // include: {
+      //    row: {
+      //       include: {
+      //          project: {
+      //             select: {
+      //                ownerId: true
+      //             }
+      //          }
+      //       }
+      //    }
+      // }
    })
    console.log('server stitch', stitch)
    if(!stitch){
       return new Response(JSON.stringify('Stitch not found'), {status: 404});
    }
-   if(stitch?.row.project.ownerId !== event.locals.user?.id){
-      return new Response(JSON.stringify('Stitch not yours'), {status: 402});
-   }
+   // if(stitch?.row.project.ownerId !== event.locals.user?.id){
+   //    return new Response(JSON.stringify('Stitch not yours'), {status: 402});
+   // }
    const updatedStitch = await prisma.stitch.update({
       where: {
          id: stitch.id
