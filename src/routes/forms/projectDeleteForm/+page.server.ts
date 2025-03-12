@@ -5,7 +5,6 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { redirect } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
 import { projectDeleteFormSchema } from '$lib/formSchemas/schemas';
-import { date } from 'zod';
 
 export const load = (async (event) => {
    return {};
