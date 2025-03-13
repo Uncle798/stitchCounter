@@ -28,12 +28,20 @@ export const DELETE: RequestHandler = async (event) => {
             }
         })
         if(row){
-            await prisma.row.delete({
+            const stitchCount = await prisma.stitch.count({
                 where: {
                     rowId: row.rowId
                 }
             })
-            return new Response(JSON.stringify('Row deleted'), {status: 200})
+            if(stitchCount === 0){
+                await prisma.row.delete({
+                    where: {
+                        rowId: row.rowId
+                    }
+                })
+                return new Response(JSON.stringify('Row deleted'), {status: 200})
+            }
+            return new Response(JSON.stringify('Please delete stitches first'), {status: 400})
         }
         return new Response(JSON.stringify('Row not found'), {status: 404})
     }
