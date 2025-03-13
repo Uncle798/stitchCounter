@@ -4,7 +4,6 @@ import type { RequestHandler } from './$types';
 export const POST: RequestHandler = async (event) => {
    const body = await event.request.json();
    const { rowId, type, stitchNumber} = body;
-   console.log('new stitch')
    const row = await prisma.row.findUnique({
       where: {
          rowId,
@@ -16,7 +15,6 @@ export const POST: RequestHandler = async (event) => {
             rowId: row.rowId
          }
       })
-      console.log(rowStitches)
       const stitch = await prisma.stitch.create({
          data: {
             rowId:row.rowId,

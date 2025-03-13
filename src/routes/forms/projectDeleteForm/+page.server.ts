@@ -22,7 +22,6 @@ export const actions: Actions = {
          const timeRemaining = Math.floor((reset - Date.now()) /1000);
          return message(projectDeleteForm, `Please wait ${timeRemaining}s before trying again.`)
       }
-      console.log(projectDeleteForm)
       if(!projectDeleteForm.valid){
          return message(projectDeleteForm, 'Unable to process invalid form');
       }

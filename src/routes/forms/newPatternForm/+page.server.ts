@@ -30,7 +30,6 @@ export const actions: Actions = {
             rowId: newPatternForm.data.rowId
          }
       })
-      console.log(newPatternForm)
       const numberOfStitches = numberOfStitchesInRow + newPatternForm.data.numberOfStitches
       for(let i=numberOfStitchesInRow; i<numberOfStitches; i++){
          const stitch = await prisma.stitch.create({
