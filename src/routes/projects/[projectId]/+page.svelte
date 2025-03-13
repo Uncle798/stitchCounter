@@ -27,15 +27,8 @@
    }
    let selectedStitches = $state([''])
    
-   let allRows:Row[] = $state([])
-   // const allStitches = $derived.by(async ()=>{
-   //    const stitches = await data.stitches
-   //    const stitchIds:string[]=[]
-   //    stitches.forEach((stitch) =>{
-   //       stitchIds.push(stitch.id)
-   //    })
-   // })
-   const allStitches:Stitch[] =[];
+   const allRows:Row[] = $state([])
+   const allStitches:Stitch[] = $state([]);
    const wrapper = new Promise<Stitch[]>(async res => {
       const stitches = await data.stitches
       const rows = await data.rows
@@ -55,6 +48,20 @@
          })
       } else if(target.checked === false) {
          selectedStitches = []
+      }
+   }
+   let rowSelectAllChecked = $state(false)
+   function toggleRow(event:Event, rowId:string){
+      const target = event.target as HTMLInputElement
+      if(target.checked){
+         const rowStitches = allStitches.filter((stitch) => stitch.rowId === rowId);
+         if(rowStitches){
+            rowStitches.forEach((stitch) => {
+               selectedStitches.push(stitch.id);
+            })
+         }
+      } else if(target.checked === false) {
+         selectedStitches = [];
       }
    }
    const copyStitches = async() =>{
@@ -185,14 +192,17 @@
                </label>
                <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap my-2" onclick={copyStitches}>Copy selected Stitches</button>
                <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap my-2" onclick={deleteStitches}>Delete Stitches</button>
-               <Accordion value={accordionValue} onValueChange={(event) => (accordionValue = event.value)} >
+               <Accordion value={accordionValue} onValueChange={(event) => (accordionValue = event.value)} onFocusChange={()=>selectedStitches=[]} collapsible={true}>
                      {#each rows as row}
                      {@const rowStitches = stitches.filter((stitch) => stitch.rowId === row.rowId)}
                         <Accordion.Item value={row.number.toString()}>
                            {#snippet control()}Row number {row.number.toString()}, {rowStitches.length} stitches{/snippet}
                            {#snippet panel()}
+                              <label for={row.rowId} class="label-text">Select All
+                                 <input type="checkbox" name={row.rowId} id={row.rowId} class="checkbox" value={row.rowId} onclick={(e)=>toggleRow(e, row.rowId)}>
+                              </label>
                               {#each rowStitches as stitch}
-                                 <div class="flex gap-3 align-middle">
+                                 <div class="grid grid-cols-5 gap- x-1 align-middle">
                                     <input type="checkbox" class='checkbox' name={stitch.id} id={stitch.id} bind:group={selectedStitches} value={stitch.id}>
                                     <div>{stitch.number}</div>
                                     <div>{stitch.type}</div>
