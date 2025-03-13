@@ -7,9 +7,9 @@
    import Header from '$lib/Header.svelte';
    import { onMount } from 'svelte';
    import type { PageData } from './$types';
-   import { beforeNavigate, invalidateAll } from '$app/navigation';
+   import { beforeNavigate, invalidateAll, invalidate } from '$app/navigation';
    import { fade } from 'svelte/transition';
-   import type { Stitch } from '@prisma/client';
+   import type { Row, Stitch, StitchType } from '@prisma/client';
    import { Accordion } from '@skeletonlabs/skeleton-svelte';
    let { data }: { data: PageData } = $props();
    let wakeLock: WakeLockSentinel;
@@ -26,11 +26,24 @@
       return wakeLock
    }
    let selectedStitches = $state([''])
-   let allStitches:Stitch[]=[]
+   
+   let allRows:Row[] = $state([])
+   // const allStitches = $derived.by(async ()=>{
+   //    const stitches = await data.stitches
+   //    const stitchIds:string[]=[]
+   //    stitches.forEach((stitch) =>{
+   //       stitchIds.push(stitch.id)
+   //    })
+   // })
+   const allStitches:Stitch[] =[];
    const wrapper = new Promise<Stitch[]>(async res => {
       const stitches = await data.stitches
+      const rows = await data.rows
       stitches.forEach((stitch) => {
          allStitches.push(stitch);
+      })
+      rows.forEach((row) => {
+         allRows.push(row)
       })
       res(stitches)
    })
@@ -44,6 +57,27 @@
          selectedStitches = []
       }
    }
+   const copyStitches = async() =>{
+      let i = 1;
+      selectedStitches.forEach(async (stitchId) => {
+         const stitches = await data.stitches;
+         const stitch = stitches.find((s) => s.id === stitchId);
+         const rowStitches = stitches.filter((s) => s.rowId === stitch?.rowId);
+         if(stitch){
+            createStitch(stitch.rowId, stitch.type, rowStitches.length+i)
+         }
+         i++;
+      })
+      invalidateAll()
+   }
+   const createStitch = async (rowId:string, type:StitchType, stitchNumber:number) => {
+      const response = await fetch(`/api/stitch`, {
+         method: 'POST',
+         body: JSON.stringify({rowId, type, stitchNumber})
+      })
+      await response.json()
+      invalidateAll();
+   }
    const deleteStitches = async () => {
       for await(const stitch of selectedStitches){
          const response = await fetch(`/api/stitch`, {
@@ -56,11 +90,12 @@
    }
    const toggleStitch = async (stitchId:string, completed:boolean) => {
       const response = await fetch('/api/stitch', {
-         method: 'POST',
+         method: 'PATCH',
          body: JSON.stringify({stitchId, completed})
       })
       const body = await response.json()
       console.log(body)
+      const project = await data.project
       invalidateAll()
    }
    onMount(()=> requestWakeLock())
@@ -70,6 +105,50 @@
       }
    })
    let accordionValue = $state([''])
+   let sewingMode = $state(false)
+   let previousStitch = $state<Stitch>({} as Stitch)
+   let currentStitch = $state<Stitch>({} as Stitch)
+   let nextStitch = $state<Stitch | undefined>()
+   async function getNextStitch(stitchId:string){
+      const stitches = await data.stitches
+      const stitch = stitches.find((s) => s.id === stitchId)
+      console.log('currentStitch', currentStitch)
+      if(stitch){
+         const stitchNum = stitch.number;
+         const rowStitches = stitches.filter((s) => s.rowId === stitch.rowId)
+         if(stitchNum < rowStitches.length){
+            nextStitch = rowStitches.find((s) => s.number === stitchNum +1 );
+            previousStitch = currentStitch
+            currentStitch= stitch
+            console.log('nextStitch',nextStitch)
+         } else {
+            const row = allRows.find((row) => row.rowId === stitch.rowId);
+            console.log(row?.number)
+            const nextRow = allRows.find((r) => r.number === row!.number+1);
+            console.log(nextRow)
+            if(nextRow){
+               nextStitch = stitches.find((s)=> {
+                  return s.rowId === nextRow.rowId && s.number === 1;
+               })
+               previousStitch = currentStitch
+            }
+         }
+      }
+   }
+   const startSewingMode = async (startingStitchId:string) => {
+      const stitches = await data.stitches
+      const startingStitch=stitches.find((stitch) => stitch.id === startingStitchId)
+      if(startingStitch){
+         currentStitch=startingStitch
+         previousStitch=currentStitch
+      }
+      getNextStitch(currentStitch.id)
+      sewingMode = true
+   }
+   async function finishCurrentStitch(stitchId:string) {
+      await toggleStitch(currentStitch.id, currentStitch.completed)
+      await getNextStitch(nextStitch!.id)
+   }
 </script>
 
 <a href="/" class="anchor">Home</a>
@@ -84,46 +163,58 @@
          loading rows
       </div>
    {:then rows} 
-      {#await wrapper}
+      {#await data.stitches}
          loading stitches
       {:then stitches} 
          {#if project}
          <Header title={project.name} />
-         <div class="m-2" transition:fade={{duration:600}}>
-            <h1 class="h1 text-center ">{project.name}</h1>
-            <label for="selectAll" class="label-text">
-               Select All
-               <input type="checkbox" name="selectAll" id="selectAll" class="checkbox" onchange={toggleAll} checked={selectedStitches.length === allStitches.length}>
-            </label>
-            <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap my-2" onclick={deleteStitches}>Delete Stitches</button>
-            <Accordion value={accordionValue} onValueChange={(event) => (accordionValue = event.value)} >
-                  {#each rows as row}
-                  {@const rowStitches = stitches.filter((stitch) => stitch.rowId === row.rowId)}
-                     <Accordion.Item value={row.number.toString()}>
-                        {#snippet control()}Row number {row.number.toString()}{/snippet}
-                        {#snippet panel()}
-                           {#each rowStitches as stitch}
-                              <div class="flex gap-3 align-middle">
-                                 <input type="checkbox" class='checkbox' name={stitch.id} id={stitch.id} bind:group={selectedStitches} value={stitch.id}>
-                                 <div>{stitch.number}</div>
-                                 <div>{stitch.type}</div>
-                                 <div><button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit sm:w-full" onclick={()=>toggleStitch(stitch.id, stitch.completed)}>
-                                    {#if stitch.completed}
-                                       Undo Stitch
-                                    {:else}
-                                       Complete Stitch
-                                    {/if}
-                                 </button></div>
-                              </div>
-                           {/each}
-                           <NewPatternForm data={data.newPatternForm}  rowId={row.rowId} />
-                        {/snippet}
-                     </Accordion.Item>
-                  {/each}
-            </Accordion>
-            <NewRowForm projectId={project.id} data={data.newRowForm} rowNumber={rows.length+1}/>
-            <ProjectDeleteForm projectId={project.id} projectName={project.name} data={data.projectDeleteForm}/>
-         </div>
+         {#if sewingMode}
+            <div class="m-2">
+               Previous stitch {previousStitch.number} {previousStitch.type}
+            </div>
+            <div>currentStitch {currentStitch.number} {currentStitch.type}</div>
+            <div>nextStitch {nextStitch?.number} {nextStitch?.type}</div>
+            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit sm:w-full" onclick={()=>finishCurrentStitch(currentStitch.id)}>Finish current stitch</button>
+            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit sm:w-full" onclick={()=>sewingMode=false}>Exit sewing mode</button>
+         {:else}
+            <div class="m-2" transition:fade={{duration:600}}>
+               <h1 class="h1 text-center ">{project.name}</h1>
+               <label for="selectAll" class="label-text">
+                  Select All
+                  <input type="checkbox" name="selectAll" id="selectAll" class="checkbox" onchange={toggleAll} checked={selectedStitches.length === allStitches.length}>
+               </label>
+               <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap my-2" onclick={copyStitches}>Copy selected Stitches</button>
+               <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap my-2" onclick={deleteStitches}>Delete Stitches</button>
+               <Accordion value={accordionValue} onValueChange={(event) => (accordionValue = event.value)} >
+                     {#each rows as row}
+                     {@const rowStitches = stitches.filter((stitch) => stitch.rowId === row.rowId)}
+                        <Accordion.Item value={row.number.toString()}>
+                           {#snippet control()}Row number {row.number.toString()}, {rowStitches.length} stitches{/snippet}
+                           {#snippet panel()}
+                              {#each rowStitches as stitch}
+                                 <div class="flex gap-3 align-middle">
+                                    <input type="checkbox" class='checkbox' name={stitch.id} id={stitch.id} bind:group={selectedStitches} value={stitch.id}>
+                                    <div>{stitch.number}</div>
+                                    <div>{stitch.type}</div>
+                                    <div><button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit sm:w-full" onclick={()=>toggleStitch(stitch.id, stitch.completed)}>
+                                       {#if stitch.completed}
+                                          Undo Stitch
+                                       {:else}
+                                          Complete Stitch
+                                       {/if}
+                                    </button></div>
+                                    <div><button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit sm:w-full" onclick={()=>startSewingMode(stitch.id)}>Start Sewing mode here</button></div>
+                                 </div>
+                              {/each}
+                              <NewPatternForm data={data.newPatternForm}  rowId={row.rowId} />
+                           {/snippet}
+                        </Accordion.Item>
+                     {/each}
+               </Accordion>
+               <NewRowForm projectId={project.id} data={data.newRowForm} rowNumber={rows.length+1}/>
+               <ProjectDeleteForm projectId={project.id} projectName={project.name} data={data.projectDeleteForm}/>
+            </div>
+            {/if}
          {/if}
       {/await}
    {/await}   
