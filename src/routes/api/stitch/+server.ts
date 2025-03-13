@@ -1,6 +1,34 @@
 import { prisma } from '$lib/server/prisma';
 import type { RequestHandler } from './$types';
 
+export const POST: RequestHandler = async (event) => {
+   const body = await event.request.json();
+   const { rowId, type, stitchNumber} = body;
+   console.log('new stitch')
+   const row = await prisma.row.findUnique({
+      where: {
+         rowId,
+      }
+   })
+   if(row){
+      const rowStitches = await prisma.stitch.count({
+         where: {
+            rowId: row.rowId
+         }
+      })
+      console.log(rowStitches)
+      const stitch = await prisma.stitch.create({
+         data: {
+            rowId:row.rowId,
+            type,
+            number: stitchNumber
+         }
+      })
+      return new Response(JSON.stringify(stitch), {status: 200})
+   }
+   return new Response(null, {status:200})
+}
+
 export const DELETE: RequestHandler = async (event) => {
    const body = await event.request.json()
    const { stitchId } = body
@@ -35,7 +63,7 @@ export const DELETE: RequestHandler = async (event) => {
    return new Response(JSON.stringify('Stitch deleted'), { status: 200 });
 };
 
-export const POST: RequestHandler = async (event) => {
+export const PATCH: RequestHandler = async (event) => {
    const body = await event.request.json();
    const { stitchId } = body;
    const stitch = await prisma.stitch.findUnique({
@@ -54,13 +82,10 @@ export const POST: RequestHandler = async (event) => {
       //    }
       // }
    })
-   console.log('server stitch', stitch)
    if(!stitch){
       return new Response(JSON.stringify('Stitch not found'), {status: 404});
    }
-   // if(stitch?.row.project.ownerId !== event.locals.user?.id){
-   //    return new Response(JSON.stringify('Stitch not yours'), {status: 402});
-   // }
+
    const updatedStitch = await prisma.stitch.update({
       where: {
          id: stitch.id
