@@ -59,4 +59,5 @@
 	</div>
 	{/snippet}
 </Modal>
+<div class="bg-tertiary-50 dark:bg-tertiary-950 fixed top-0 right-0 left-0 h-8 text-center font-bold p-2"></div>
 {@render children()}
