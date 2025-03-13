@@ -27,23 +27,10 @@
    }
    let selectedStitches = $state([''])
    
-   const allRows:Row[] = $state([])
-   const allStitches:Stitch[] = $state([]);
-   const wrapper = new Promise<Stitch[]>(async res => {
-      const stitches = await data.stitches
-      const rows = await data.rows
-      stitches.forEach((stitch) => {
-         allStitches.push(stitch);
-      })
-      rows.forEach((row) => {
-         allRows.push(row)
-      })
-      res(stitches)
-   })
-   function toggleAll(event:Event){
+   async function toggleAll(event:Event){
       const target = event.target as HTMLInputElement
       if(target.checked){
-         allStitches.forEach((stitch) => {
+        (await data.stitches).forEach((stitch) => {
             selectedStitches.push(stitch.id)
          })
       } else if(target.checked === false) {
@@ -105,6 +92,13 @@
       const project = await data.project
       invalidateAll()
    }
+   const deleteRow = async (rowId:string) => {
+      const response = await fetch(`/api/rows`, {
+         method: 'Delete',
+         body: JSON.stringify({rowId})
+      })
+      invalidateAll();
+   }
    onMount(()=> requestWakeLock())
    beforeNavigate(() => {
       if(wakeLock){
@@ -129,6 +123,7 @@
             currentStitch= stitch
             console.log('nextStitch',nextStitch)
          } else {
+            const allRows = await data.rows;
             const row = allRows.find((row) => row.rowId === stitch.rowId);
             console.log(row?.number)
             const nextRow = allRows.find((r) => r.number === row!.number+1);
@@ -188,7 +183,7 @@
                <h1 class="h1 text-center ">{project.name}</h1>
                <label for="selectAll" class="label-text">
                   Select All
-                  <input type="checkbox" name="selectAll" id="selectAll" class="checkbox" onchange={toggleAll} checked={selectedStitches.length === allStitches.length}>
+                  <input type="checkbox" name="selectAll" id="selectAll" class="checkbox" onchange={toggleAll} checked={selectedStitches.length === stitches.length}>
                </label>
                <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap my-2" onclick={copyStitches}>Copy selected Stitches</button>
                <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap my-2" onclick={deleteStitches}>Delete Stitches</button>
@@ -217,6 +212,7 @@
                                  </div>
                               {/each}
                               <NewPatternForm data={data.newPatternForm}  rowId={row.rowId} />
+                              <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit sm:w-full" onclick={()=>deleteRow(row.rowId)}>Delete Row (all stitches must be deleted first)</button>
                            {/snippet}
                         </Accordion.Item>
                      {/each}

@@ -23,7 +23,6 @@ export const actions: Actions = {
          const timeRemaining = Math.floor((reset - Date.now()) /1000);
          return message(newRowForm, `Please wait ${timeRemaining}s before trying again.`)
       }
-      console.log(newRowForm)
       if(!newRowForm.valid){
          return message(newRowForm, 'Unable to process invalid form');
       }
