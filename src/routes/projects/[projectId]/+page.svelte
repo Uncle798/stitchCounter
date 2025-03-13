@@ -51,10 +51,10 @@
       }
    }
    let rowSelectAllChecked = $state(false)
-   function toggleRow(event:Event, rowId:string){
+   async function toggleRow(event:Event, rowId:string){
       const target = event.target as HTMLInputElement
       if(target.checked){
-         const rowStitches = allStitches.filter((stitch) => stitch.rowId === rowId);
+         const rowStitches = (await data.stitches).filter((stitch) => stitch.rowId === rowId);
          if(rowStitches){
             rowStitches.forEach((stitch) => {
                selectedStitches.push(stitch.id);
