@@ -63,33 +63,39 @@ export const DELETE: RequestHandler = async (event) => {
 
 export const PATCH: RequestHandler = async (event) => {
    const body = await event.request.json();
-   const { stitchId } = body;
+   console.log(body)
+   const { stitchId, completed } = body;
+   if(!stitchId || !completed){
+      return new Response(JSON.stringify('Stitch Id or Completed not provided'), {status:400})
+   }
    const stitch = await prisma.stitch.findUnique({
       where: {
          id: stitchId
       },
-      // include: {
-      //    row: {
-      //       include: {
-      //          project: {
-      //             select: {
-      //                ownerId: true
-      //             }
-      //          }
-      //       }
-      //    }
-      // }
+      include: {
+         row: {
+            include: {
+               project: {
+                  select: {
+                     ownerId: true
+                  }
+               }
+            }
+         }
+      }
    })
    if(!stitch){
       return new Response(JSON.stringify('Stitch not found'), {status: 404});
    }
-
+   if(stitch.row.project.ownerId !== event.locals.user?.id){
+      return new Response(JSON.stringify('Not your stitch'), { status: 402})
+   }
    const updatedStitch = await prisma.stitch.update({
       where: {
          id: stitch.id
       },
       data: {
-         completed:!stitch.completed
+         completed,
       }
    })
    return new Response(JSON.stringify(updatedStitch), {status: 200});
