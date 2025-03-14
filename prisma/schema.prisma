@@ -16,6 +16,8 @@ datasource db {
 model Project {
   id      String @id @unique @default(cuid(2))
   name    String
+  ownerId String
+  user    User @relation(fields: [ownerId], references: [id])
   rows    Row[]
 }
 
@@ -53,7 +55,7 @@ model User {
   archive       Boolean        @default(false)
   googleId      String?
   yahooId       String?
-  // projects      Project[]
+  projects      Project[]
   session       Session[]
   verification  Verification[]
 

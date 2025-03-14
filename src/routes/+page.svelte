@@ -36,8 +36,8 @@
       res(projects)
    })
 </script>
-<!-- {#if data.user}
-    -->
+{#if data.user}
+   
 
 {#await wrapper}
    <div class="mt-10">Loading projects</div>
@@ -56,6 +56,6 @@
       <NewProjectForm data={data.newProjectForm} />
    </div>
    {/await}
-<!-- {:else}
+{:else}
    <LoginForm data={data.loginForm} classes='m-2'/>
-{/if} -->
+{/if}

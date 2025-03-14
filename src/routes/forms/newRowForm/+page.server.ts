@@ -12,13 +12,12 @@ export const load = (async (event) => {
 
 export const actions: Actions = {
    default: async (event) => {
-      // if(!event.locals.user){
-      //    redirect(302, '/login?toast=unauthorized')
-      // }
+      if(!event.locals.user){
+         redirect(302, '/login?toast=unauthorized')
+      }
       const formData = await event.request.formData();
       const newRowForm = await superValidate(formData, zod(newRowFormSchema));
-      //for minimal repo
-      const { success, reset } = await ratelimit.general.limit(event.getClientAddress())
+      const { success, reset } = await ratelimit.general.limit(event.locals.user.id)
       if(!success) {
          const timeRemaining = Math.floor((reset - Date.now()) /1000);
          return message(newRowForm, `Please wait ${timeRemaining}s before trying again.`)

@@ -31,6 +31,6 @@ export const ratelimit = {
       redis,
       analytics: false,
       prefix: 'ratelimit:general',
-      limiter: Ratelimit.slidingWindow(1, '10s')
+      limiter: Ratelimit.slidingWindow(1, '3s')
    })
 }
