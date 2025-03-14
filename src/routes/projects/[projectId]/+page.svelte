@@ -174,19 +174,21 @@
             <div class="m-2">
                Previous stitch {previousStitch.number} {previousStitch.type}
             </div>
-            <div>currentStitch {currentStitch.number} {currentStitch.type}</div>
-            <div>nextStitch {nextStitch?.number} {nextStitch?.type}</div>
-            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit sm:w-full" onclick={()=>finishCurrentStitch(currentStitch.id)}>Finish current stitch</button>
-            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit sm:w-full" onclick={()=>sewingMode=false}>Exit sewing mode</button>
+            <div>Current Stitch {currentStitch.number} {currentStitch.type}</div>
+            <div>Next Stitch {nextStitch?.number} {nextStitch?.type}</div>
+            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit" onclick={()=>finishCurrentStitch(currentStitch.id)}>Finish current stitch</button>
+            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit" onclick={()=>sewingMode=false}>Exit sewing mode</button>
          {:else}
+         <div class=" sticky top-8 bg-tertiary-50-950 grid grid-cols-3">
+            <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap " onclick={copyStitches}>Copy selected Stitches</button>
+            <h1 class="h1 text-center sticky top-8">{project.name}</h1>
+            <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap" onclick={deleteStitches}>Delete Stitches</button>
+         </div>
             <div class="m-2" transition:fade={{duration:600}}>
-               <h1 class="h1 text-center ">{project.name}</h1>
                <label for="selectAll" class="label-text">
                   Select All
                   <input type="checkbox" name="selectAll" id="selectAll" class="checkbox" onchange={toggleAll} checked={selectedStitches.length === stitches.length}>
                </label>
-               <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap my-2" onclick={copyStitches}>Copy selected Stitches</button>
-               <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap my-2" onclick={deleteStitches}>Delete Stitches</button>
                <Accordion value={accordionValue} onValueChange={(event) => (accordionValue = event.value)} onFocusChange={()=>selectedStitches=[]} collapsible={true}>
                      {#each rows as row}
                      {@const rowStitches = stitches.filter((stitch) => stitch.rowId === row.rowId)}
