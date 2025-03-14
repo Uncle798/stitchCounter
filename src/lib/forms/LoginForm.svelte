@@ -20,7 +20,7 @@
     <div class="h4">
         <FormMessage message={$message} />
     </div>
-    <form method="post" use:enhance >
+    <form method="post" action="/forms/loginForm" use:enhance >
         <EmailInput
         bind:value={$form.email}
         errors={$errors.email}
