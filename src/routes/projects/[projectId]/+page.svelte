@@ -151,6 +151,25 @@
       await toggleStitch(currentStitch.id, currentStitch.completed)
       await getNextStitch(nextStitch!.id)
    }
+   async function completeFullRow(rowId:string) {
+      const rowStitches = (await data.stitches).filter((stitch) => stitch.rowId === rowId);
+      rowStitches.forEach(async (stitch) => {
+         await toggleStitch(stitch.id, true);
+      })
+   }
+   const allStitchesCompleted = $derived((stitches:Stitch[]) => {
+      let completedStitches = 0;
+      stitches.forEach((stitch) => {
+         if(stitch.completed){
+            completedStitches ++;
+         }
+      })
+      if(completedStitches === stitches.length){
+         return true
+      } else {
+         return false
+      }
+   })
 </script>
 
 <a href="/" class="anchor">Home</a>
@@ -184,6 +203,7 @@
             <h1 class="h1 text-center sticky top-8">{project.name}</h1>
             <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap" onclick={deleteStitches}>Delete Stitches</button>
          </div>
+            
             <div class="m-2" transition:fade={{duration:600}}>
                <label for="selectAll" class="label-text">
                   Select All
@@ -192,18 +212,26 @@
                <Accordion value={accordionValue} onValueChange={(event) => (accordionValue = event.value)} onFocusChange={()=>selectedStitches=[]} collapsible={true}>
                      {#each rows as row}
                      {@const rowStitches = stitches.filter((stitch) => stitch.rowId === row.rowId)}
-                        <Accordion.Item value={row.number.toString()}>
-                           {#snippet control()}Row number {row.number.toString()}, {rowStitches.length} stitches{/snippet}
+                        <Accordion.Item value={row.rowId}>
+                           {#snippet control()}
+                              Row number {row.number.toString()}, {rowStitches.length} stitches
+                              {#if allStitchesCompleted(rowStitches)}
+                                 Row Completed!
+                              {/if}
+                           {/snippet}
                            {#snippet panel()}
-                              <label for={row.rowId} class="label-text">Select All
-                                 <input type="checkbox" name={row.rowId} id={row.rowId} class="checkbox" value={row.rowId} onclick={(e)=>toggleRow(e, row.rowId)}>
-                              </label>
+                              <div>
+                                 <label for={row.rowId} class="label-text">Select All
+                                    <input type="checkbox" name={row.rowId} id={row.rowId} class="checkbox" value={row.rowId} onclick={(e)=>toggleRow(e, row.rowId)}>
+                                 </label>
+                                 <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap" onclick={()=>completeFullRow(row.rowId)}>Complete Whole Row</button>
+                              </div>
                               {#each rowStitches as stitch}
                                  <div class="grid grid-cols-5 gap- x-1 align-middle">
                                     <input type="checkbox" class='checkbox' name={stitch.id} id={stitch.id} bind:group={selectedStitches} value={stitch.id}>
                                     <div>{stitch.number}</div>
                                     <div>{stitch.type}</div>
-                                    <div><button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit sm:w-full" onclick={()=>toggleStitch(stitch.id, stitch.completed)}>
+                                    <div><button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit sm:w-full" onclick={()=>toggleStitch(stitch.id, !stitch.completed)}>
                                        {#if stitch.completed}
                                           Undo Stitch
                                        {:else}
