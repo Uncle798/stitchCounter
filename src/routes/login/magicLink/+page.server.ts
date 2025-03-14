@@ -33,14 +33,7 @@ export const actions:Actions ={
          return message(magicLinkForm, 'Email not found please register');
       }
       const magicLink = await generateMagicLink(magicLinkForm.data.email);
-      const redirectTo = event.url.searchParams.get('redirectTo');
-      const unitNum = event.url.searchParams.get('unitNum');
-      if(redirectTo || unitNum){
-         const fullLink = `${magicLink}?redirectTo=${redirectTo}&unitNum=${unitNum}`
-         await sendMagicLinkEmail(fullLink, user.email!)
-      } else {
-         await sendMagicLinkEmail(magicLink, user.email!);
-      }
+      await sendMagicLinkEmail(magicLink, user.email!);
       return message(magicLinkForm, 'An email has been sent to log you in. Feel free to close this tab.')
    }
 }

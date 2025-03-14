@@ -38,7 +38,7 @@ export const actions:Actions ={
       const unitNum = event.url.searchParams.get('unitNum');
       const invoiceNum = event.url.searchParams.get('invoiceNum');
       if(redirectTo || unitNum || invoiceNum ){
-         const fullLink = `${magicLink}?redirectTo=${redirectTo}&unitNum=${unitNum}&invoiceNum=${invoiceNum}`
+         const fullLink = `${magicLink}`
          await sendMagicLinkEmail(fullLink, user.email!)
       } else {
          await sendMagicLinkEmail(magicLink, user.email!);

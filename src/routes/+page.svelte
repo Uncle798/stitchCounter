@@ -57,5 +57,5 @@
    </div>
    {/await}
 {:else}
-   <LoginForm data={data.loginForm} classes='m-2'/>
+   <LoginForm data={data.loginForm} classes='m-2 mt-9'/>
 {/if}

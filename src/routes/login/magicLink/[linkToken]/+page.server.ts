@@ -26,23 +26,5 @@ export const load = (async (event) => {
    const token =  generateSessionToken();
    const session = await createSession(token, user.id!);
    setSessionTokenCookie(event, token, session.expiresAt);
-   const redirectTo = event.url.searchParams.get('redirectTo');
-   const unitNum = event.url.searchParams.get('unitNum');
-   switch (redirectTo) {
-      case 'home':
-         redirect(303, '/');
-         break;
-      case 'newLease':
-         redirect(302, `/newLease?unitNum=${unitNum}`)
-         break;
-      case 'units':
-         if(unitNum){
-            redirect(302, `/units/${unitNum}`)
-         }
-         redirect(302, '/units')
-         break;
-      default:
-         redirect(302, '/units/available');
-         break;
-   }
+   redirect(302, '/');
 }) satisfies PageServerLoad;
