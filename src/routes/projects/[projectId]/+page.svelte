@@ -231,7 +231,7 @@
                         <Accordion.Item value={row.rowId}>
                            {#snippet control()}
                               Row number {row.number.toString()}, {rowStitches.length} stitches
-                              {#if allStitchesCompleted(rowStitches)}
+                              {#if allStitchesCompleted(rowStitches) && rowStitches.length > 0}
                                  Row Completed!
                               {/if}
                            {/snippet}

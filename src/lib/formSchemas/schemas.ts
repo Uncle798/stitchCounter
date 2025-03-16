@@ -84,7 +84,7 @@ export type NewRowFormSchema = typeof newRowFormSchema;
 
 export const newPatternSchema = z.object({
    numberOfStitches: z.number().positive(),
-   typeOfStitches: z.enum(['Single', 'Increase', 'Decrease']),
+   typeOfStitches: z.enum(['Single', 'Increase', 'Decrease', 'Chain']),
    rowId: z.string().cuid2(),
 });
 export type NewPatternSchema = typeof newPatternSchema

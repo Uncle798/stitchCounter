@@ -42,6 +42,7 @@ enum StitchType {
   Single
   Increase
   Decrease
+  Chain
 }
 
 model User {
