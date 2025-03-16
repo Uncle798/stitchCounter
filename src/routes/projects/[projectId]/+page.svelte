@@ -51,6 +51,10 @@
          selectedStitchIds = [];
       }
    }
+   function exitSewingMode(){
+      wakeLock?.release()
+      sewingMode = false;
+   }
    const copyStitches = async() =>{
       let i = 1;
       selectedStitchIds.forEach(async (stitchId) => {
@@ -98,11 +102,7 @@
       })
       invalidateAll();
    }
-   beforeNavigate(() => {
-      if(wakeLock){
-         wakeLock.release()
-      }
-   })
+
    let accordionValue = $state([''])
    let sewingMode = $state(false)
    let previousStitch = $state<Stitch>({} as Stitch)
@@ -183,6 +183,11 @@
    onMount(async () => {
       allStitches = await data.stitches
    })
+   beforeNavigate(() => {
+      if(wakeLock){
+         wakeLock.release()
+      }
+   })
 </script>
 
 {#await data.project}
@@ -206,7 +211,7 @@
                <span>Current Stitch {currentStitch.number} {currentStitch.type}</span>
                <span>Next Stitch {nextStitch?.number} {nextStitch?.type}</span>
             </div>
-            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit" onclick={()=>sewingMode=false}>Exit sewing mode</button>
+            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit" onclick={exitSewingMode}>Exit sewing mode</button>
             <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-96 bottom-3 left-1 right-1 absolute" onclick={()=>finishCurrentStitch(currentStitch.id)}>Finish current stitch</button>
          {:else}
          <div class=" sticky top-8 bg-tertiary-50-950 grid grid-cols-3">
