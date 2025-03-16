@@ -206,13 +206,13 @@
          {#if project}
          <Header title={project.name} />
          {#if sewingMode}
-            <div class="m-2">
-               Previous stitch {previousStitch.number} {previousStitch.type}
+            <div class="m-2 mt-8 flex flex-col">
+               <span>Previous stitch {previousStitch.number} {previousStitch.type}</span>
                <span>Current Stitch {currentStitch.number} {currentStitch.type}</span>
                <span>Next Stitch {nextStitch?.number} {nextStitch?.type}</span>
+               <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit" onclick={exitSewingMode}>Exit sewing mode</button>
+               <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-96 bottom-3 left-1 right-1 absolute" onclick={()=>finishCurrentStitch(currentStitch.id)}>Finish current stitch</button>
             </div>
-            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit" onclick={exitSewingMode}>Exit sewing mode</button>
-            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-96 bottom-3 left-1 right-1 absolute" onclick={()=>finishCurrentStitch(currentStitch.id)}>Finish current stitch</button>
          {:else}
          <div class=" sticky top-8 bg-tertiary-50-950 grid grid-cols-3">
             <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap " onclick={copyStitches}>Copy selected Stitches</button>
