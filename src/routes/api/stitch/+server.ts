@@ -65,7 +65,7 @@ export const PATCH: RequestHandler = async (event) => {
    const body = await event.request.json();
    console.log(body)
    const { stitchId, completed } = body;
-   if(!stitchId || !completed){
+   if(!stitchId || completed === undefined){
       return new Response(JSON.stringify('Stitch Id or Completed not provided'), {status:400})
    }
    const stitch = await prisma.stitch.findUnique({
