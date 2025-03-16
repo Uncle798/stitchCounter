@@ -185,8 +185,6 @@
    })
 </script>
 
-<a href="/" class="anchor">Home</a>
-
 {#await data.project}
    <div class="m-2">
       loading project
@@ -205,11 +203,11 @@
          {#if sewingMode}
             <div class="m-2">
                Previous stitch {previousStitch.number} {previousStitch.type}
+               <span>Current Stitch {currentStitch.number} {currentStitch.type}</span>
+               <span>Next Stitch {nextStitch?.number} {nextStitch?.type}</span>
             </div>
-            <div>Current Stitch {currentStitch.number} {currentStitch.type}</div>
-            <div>Next Stitch {nextStitch?.number} {nextStitch?.type}</div>
-            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit" onclick={()=>finishCurrentStitch(currentStitch.id)}>Finish current stitch</button>
             <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit" onclick={()=>sewingMode=false}>Exit sewing mode</button>
+            <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-96 bottom-3 left-1 right-1 absolute" onclick={()=>finishCurrentStitch(currentStitch.id)}>Finish current stitch</button>
          {:else}
          <div class=" sticky top-8 bg-tertiary-50-950 grid grid-cols-3">
             <button type="button" class="btn rounded-lg preset-filled-primary-50-950 text-wrap " onclick={copyStitches}>Copy selected Stitches</button>
