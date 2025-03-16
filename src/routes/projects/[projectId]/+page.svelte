@@ -1,7 +1,7 @@
 <script lang="ts">
    import StitchDisplay from '$lib/displayComponents/StitchDisplay.svelte';
    import NewPatternForm from '$lib/forms/NewPatternForm.svelte';
-
+   import * as _ from 'lodash'
    import NewRowForm from '$lib/forms/NewRowForm.svelte';
    import ProjectDeleteForm from '$lib/forms/ProjectDeleteForm.svelte';
    import Header from '$lib/Header.svelte';
@@ -12,48 +12,48 @@
    import type { Row, Stitch, StitchType } from '@prisma/client';
    import { Accordion } from '@skeletonlabs/skeleton-svelte';
    let { data }: { data: PageData } = $props();
-   let wakeLock: WakeLockSentinel;
+   let wakeLock: WakeLockSentinel | null = null;
    const requestWakeLock = async () => {
       try {
-         wakeLock = await navigator.wakeLock.request('screen');
+         wakeLock = await navigator.wakeLock.request();
+         console.log(wakeLock)
          wakeLock.addEventListener('release', () => {
-            console.log('Screen lock released', wakeLock.released)
+            console.log('Screen lock released', wakeLock?.released)
          })
-         console.log('Wake locked', wakeLock.released)
+         console.log('Wake locked released', wakeLock.released)
       } catch (error) {
          console.error(error)
       }
       return wakeLock
    }
-   let selectedStitches = $state([''])
+   let selectedStitchIds = $state([''])
    
    async function toggleAll(event:Event){
       const target = event.target as HTMLInputElement
       if(target.checked){
         (await data.stitches).forEach((stitch) => {
-            selectedStitches.push(stitch.id)
+            selectedStitchIds.push(stitch.id)
          })
       } else if(target.checked === false) {
-         selectedStitches = []
+         selectedStitchIds = []
       }
    }
-   let rowSelectAllChecked = $state(false)
    async function toggleRow(event:Event, rowId:string){
       const target = event.target as HTMLInputElement
       if(target.checked){
          const rowStitches = (await data.stitches).filter((stitch) => stitch.rowId === rowId);
          if(rowStitches){
             rowStitches.forEach((stitch) => {
-               selectedStitches.push(stitch.id);
+               selectedStitchIds.push(stitch.id);
             })
          }
       } else if(target.checked === false) {
-         selectedStitches = [];
+         selectedStitchIds = [];
       }
    }
    const copyStitches = async() =>{
       let i = 1;
-      selectedStitches.forEach(async (stitchId) => {
+      selectedStitchIds.forEach(async (stitchId) => {
          const stitches = await data.stitches;
          const stitch = stitches.find((s) => s.id === stitchId);
          const rowStitches = stitches.filter((s) => s.rowId === stitch?.rowId);
@@ -73,7 +73,7 @@
       invalidateAll();
    }
    const deleteStitches = async () => {
-      for await(const stitch of selectedStitches){
+      for await(const stitch of selectedStitchIds){
          const response = await fetch(`/api/stitch`, {
             method:'DELETE',
             body: JSON.stringify({stitchId:stitch})
@@ -88,7 +88,6 @@
          body: JSON.stringify({stitchId, completed})
       })
       const body = await response.json()
-      console.log(body)
       const project = await data.project
       invalidateAll()
    }
@@ -99,7 +98,6 @@
       })
       invalidateAll();
    }
-   onMount(()=> requestWakeLock())
    beforeNavigate(() => {
       if(wakeLock){
          wakeLock.release()
@@ -113,7 +111,6 @@
    async function getNextStitch(stitchId:string){
       const stitches = await data.stitches
       const stitch = stitches.find((s) => s.id === stitchId)
-      console.log('currentStitch', currentStitch)
       if(stitch){
          const stitchNum = stitch.number;
          const rowStitches = stitches.filter((s) => s.rowId === stitch.rowId)
@@ -121,13 +118,10 @@
             nextStitch = rowStitches.find((s) => s.number === stitchNum +1 );
             previousStitch = currentStitch
             currentStitch= stitch
-            console.log('nextStitch',nextStitch)
          } else {
             const allRows = await data.rows;
             const row = allRows.find((row) => row.rowId === stitch.rowId);
-            console.log(row?.number)
             const nextRow = allRows.find((r) => r.number === row!.number+1);
-            console.log(nextRow)
             if(nextRow){
                nextStitch = stitches.find((s)=> {
                   return s.rowId === nextRow.rowId && s.number === 1;
@@ -145,6 +139,7 @@
          previousStitch=currentStitch
       }
       getNextStitch(currentStitch.id)
+      await requestWakeLock()
       sewingMode = true
    }
    async function finishCurrentStitch(stitchId:string) {
@@ -169,6 +164,24 @@
       } else {
          return false
       }
+   })
+   let allStitches:Stitch[] = $state([])
+   const allStitchesSelected = $derived((stitches:Stitch[]) => {
+      const selectedStitches:Stitch[] = []
+      selectedStitchIds.forEach(async (stitchID) => {
+         const stitch = allStitches.find((stitch) => stitch.id === stitchID)
+         if(stitch){
+            selectedStitches.push(stitch)
+         }
+      })
+      if(_.isEqual(selectedStitches, stitches)){
+         return true
+      } else {
+         return false
+      }
+   })
+   onMount(async () => {
+      allStitches = await data.stitches
    })
 </script>
 
@@ -207,9 +220,9 @@
             <div class="m-2" transition:fade={{duration:600}}>
                <label for="selectAll" class="label-text">
                   Select All
-                  <input type="checkbox" name="selectAll" id="selectAll" class="checkbox" onchange={toggleAll} checked={selectedStitches.length === stitches.length}>
+                  <input type="checkbox" name="selectAll" id="selectAll" class="checkbox" onchange={toggleAll} checked={selectedStitchIds.length === stitches.length}>
                </label>
-               <Accordion value={accordionValue} onValueChange={(event) => (accordionValue = event.value)} onFocusChange={()=>selectedStitches=[]} collapsible={true}>
+               <Accordion value={accordionValue} onValueChange={(event) => (accordionValue = event.value)} onFocusChange={()=>selectedStitchIds=[]} collapsible={true}>
                      {#each rows as row}
                      {@const rowStitches = stitches.filter((stitch) => stitch.rowId === row.rowId)}
                         <Accordion.Item value={row.rowId}>
@@ -222,13 +235,17 @@
                            {#snippet panel()}
                               <div>
                                  <label for={row.rowId} class="label-text">Select All
-                                    <input type="checkbox" name={row.rowId} id={row.rowId} class="checkbox" value={row.rowId} onclick={(e)=>toggleRow(e, row.rowId)}>
+                                    {#if allStitchesSelected(rowStitches)}
+                                       <input type="checkbox" name={row.rowId} id={row.rowId} class="checkbox" value={row.rowId} onclick={(e)=>toggleRow(e, row.rowId)} checked>
+                                    {:else}
+                                       <input type="checkbox" name={row.rowId} id={row.rowId} class="checkbox" value={row.rowId} onclick={(e)=>toggleRow(e, row.rowId)}>
+                                    {/if}
                                  </label>
                                  <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap" onclick={()=>completeFullRow(row.rowId)}>Complete Whole Row</button>
                               </div>
                               {#each rowStitches as stitch}
                                  <div class="grid grid-cols-5 gap- x-1 align-middle">
-                                    <input type="checkbox" class='checkbox' name={stitch.id} id={stitch.id} bind:group={selectedStitches} value={stitch.id}>
+                                    <input type="checkbox" class='checkbox' name={stitch.id} id={stitch.id} bind:group={selectedStitchIds} value={stitch.id}>
                                     <div>{stitch.number}</div>
                                     <div>{stitch.type}</div>
                                     <div><button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit sm:w-full" onclick={()=>toggleStitch(stitch.id, !stitch.completed)}>
