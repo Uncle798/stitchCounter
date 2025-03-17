@@ -92,7 +92,6 @@
          body: JSON.stringify({stitchId, completed})
       })
       const body = await response.json()
-      const project = await data.project
       invalidateAll()
    }
    const deleteRow = async (rowId:string) => {
@@ -105,29 +104,48 @@
 
    let accordionValue = $state([''])
    let sewingMode = $state(false)
-   let previousStitch = $state<Stitch>({} as Stitch)
-   let currentStitch = $state<Stitch>({} as Stitch)
+   let previousStitch = $state<Stitch | undefined>()
+   let currentStitch = $state<Stitch | undefined>()
    let nextStitch = $state<Stitch | undefined>()
-   async function getNextStitch(stitchId:string){
-      const stitches = await data.stitches
-      const stitch = stitches.find((s) => s.id === stitchId)
+   function getNextStitch(stitchId:string){
+      const stitch = allStitches.find((s) => s.id === stitchId)
       if(stitch){
          const stitchNum = stitch.number;
-         const rowStitches = stitches.filter((s) => s.rowId === stitch.rowId)
+         const rowStitches = allStitches.filter((s) => s.rowId === stitch.rowId)
          if(stitchNum < rowStitches.length){
-            nextStitch = rowStitches.find((s) => s.number === stitchNum +1 );
-            previousStitch = currentStitch
-            currentStitch= stitch
+            nextStitch = rowStitches.find((s) => s.number === stitchNum +1 );      
          } else {
-            const allRows = await data.rows;
             const row = allRows.find((row) => row.rowId === stitch.rowId);
             const nextRow = allRows.find((r) => r.number === row!.number+1);
             if(nextRow){
-               nextStitch = stitches.find((s)=> {
+               nextStitch = allStitches.find((s)=> {
                   return s.rowId === nextRow.rowId && s.number === 1;
                })
-               previousStitch = currentStitch
             }
+         }
+      }
+   }
+   function getPreviousStitch(stitchId:string){
+      const stitch = allStitches.find((stitch) => stitch.id === stitchId);
+      if(stitch){
+         const row = allRows.find((row) => row.rowId === stitch.rowId);
+         if(stitch.number === 1){
+            if(row){
+               const previousRow = allRows.find((r) => r.number === row.number -1)
+               if(previousRow?.number === 1){
+                  previousStitch === undefined;
+               } else {
+                  const previousRowStitches = allStitches.filter((s) => s.rowId === previousRow?.rowId)
+                  if(previousRowStitches){
+                     console.log('previousRowStitch', $state.snapshot(previousRowStitches[previousRowStitches.length -1]))
+                     previousStitch = previousRowStitches[previousRowStitches.length -1];
+                     console.log('previousStitch', $state.snapshot(previousStitch))
+                  }
+               }
+            }
+         } else {
+            const rowStitches = allStitches.filter((s) => s.rowId === stitch.rowId);
+            previousStitch = rowStitches.find((s) => s.number === currentStitch!.number -1)
          }
       }
    }
@@ -136,15 +154,23 @@
       const startingStitch=stitches.find((stitch) => stitch.id === startingStitchId)
       if(startingStitch){
          currentStitch=startingStitch
-         previousStitch=currentStitch
       }
-      getNextStitch(currentStitch.id)
+      getPreviousStitch(currentStitch!.id)
+      getNextStitch(currentStitch!.id)
       await requestWakeLock()
       sewingMode = true
    }
    async function finishCurrentStitch(stitchId:string) {
-      await toggleStitch(currentStitch.id, currentStitch.completed)
-      await getNextStitch(nextStitch!.id)
+      await toggleStitch(stitchId, true)
+      currentStitch = nextStitch;
+      getPreviousStitch(currentStitch!.id)
+      getNextStitch(nextStitch!.id)
+   }
+   async function undoCurrentStitch(stitchId:string) {
+      await toggleStitch(stitchId, false);
+      nextStitch = currentStitch;
+      currentStitch = previousStitch;
+      getPreviousStitch(currentStitch!.id)
    }
    async function completeFullRow(rowId:string) {
       const rowStitches = (await data.stitches).filter((stitch) => stitch.rowId === rowId);
@@ -165,7 +191,8 @@
          return false
       }
    })
-   let allStitches:Stitch[] = $state([])
+   let allStitches:Stitch[] = $state([]);
+   let allRows:Row[] = $state([])
    const allStitchesSelected = $derived((stitches:Stitch[]) => {
       const selectedStitches:Stitch[] = []
       selectedStitchIds.forEach(async (stitchID) => {
@@ -182,6 +209,7 @@
    })
    onMount(async () => {
       allStitches = await data.stitches
+      allRows = await data.rows
    })
    beforeNavigate(() => {
       if(wakeLock){
@@ -207,11 +235,18 @@
          <Header title={project.name} />
          {#if sewingMode}
             <div class="m-2 mt-8 flex flex-col">
+               {#if previousStitch}
                <span>Previous stitch {previousStitch.number} {previousStitch.type}</span>
-               <span>Current Stitch {currentStitch.number} {currentStitch.type}</span>
+               {:else}
+                  <span>Previous stitch none</span>
+               {/if}
+               {#if currentStitch}
+                  <span>Current Stitch {currentStitch.number} {currentStitch.type}</span>
+               {/if}
                <span>Next Stitch {nextStitch?.number} {nextStitch?.type}</span>
                <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-fit" onclick={exitSewingMode}>Exit sewing mode</button>
-               <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-96 bottom-3 left-1 right-1 absolute" onclick={()=>finishCurrentStitch(currentStitch.id)}>Finish current stitch</button>
+               <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-80 m-2 bottom-96 left-1 right-1 absolute" onclick={()=>undoCurrentStitch(currentStitch!.id)}>Undo last stitch</button>
+               <button class="btn rounded-lg preset-filled-primary-50-950 text-wrap h-80 m-2 bottom-2  left-1 right-1 absolute" onclick={()=>finishCurrentStitch(currentStitch!.id)}>Finish current stitch</button>
             </div>
          {:else}
          <div class=" sticky top-8 bg-tertiary-50-950 grid grid-cols-3">
